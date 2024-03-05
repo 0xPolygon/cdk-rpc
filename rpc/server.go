@@ -17,9 +17,10 @@ import (
 
 // Server is an API backend to handle RPC requests
 type Server struct {
-	config  Config
-	handler *Handler
-	srv     *http.Server
+	config        Config
+	handler       *Handler
+	srv           *http.Server
+	healthHandler http.Handler
 }
 
 // Service implementation of a service an it's name
@@ -28,10 +29,13 @@ type Service struct {
 	Service interface{}
 }
 
+type Option func(*Server)
+
 // NewServer returns the JsonRPC server
 func NewServer(
 	cfg Config,
 	services []Service,
+	opts ...Option,
 ) *Server {
 	handler := newJSONRpcHandler()
 
@@ -43,6 +47,11 @@ func NewServer(
 		config:  cfg,
 		handler: handler,
 	}
+
+	for _, opt := range opts {
+		opt(srv)
+	}
+
 	return srv
 }
 
@@ -69,6 +78,9 @@ func (s *Server) startHTTP() error {
 
 	lmt := tollbooth.NewLimiter(s.config.MaxRequestsPerIPAndSecond, nil)
 	mux.Handle("/", tollbooth.LimitFuncHandler(lmt, s.handle))
+	if s.healthHandler != nil {
+		mux.Handle("/health", s.healthHandler)
+	}
 
 	s.srv = &http.Server{
 		Handler:           mux,
