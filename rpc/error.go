@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/arnaubennassar/rpc/types"
+	"github.com/0xPolygon/rpc/types"
 )
 
 const (

@@ -1,4 +1,4 @@
-module github.com/arnaubennassar/rpc
+module github.com/0xPolygon/rpc
 
 go 1.21.3
 
