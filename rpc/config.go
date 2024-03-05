@@ -1,6 +1,6 @@
 package rpc
 
-import "github.com/0xPolygon/rpc/config/types"
+import "github.com/0xPolygon/cdk-rpc/config/types"
 
 // Config represents the configuration of the json rpc
 type Config struct {

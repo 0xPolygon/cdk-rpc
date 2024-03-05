@@ -7,7 +7,7 @@ package rpc_test
 
 // 	"github.com/0xPolygon/cdk-data-availability/db"
 // 	"github.com/0xPolygon/cdk-data-availability/mocks"
-// 	"github.com/0xPolygon/rpc/rpc"
+// 	"github.com/0xPolygon/cdk-rpc/rpc"
 // 	"github.com/stretchr/testify/mock"
 // 	"github.com/stretchr/testify/require"
 // )

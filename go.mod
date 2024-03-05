@@ -1,4 +1,4 @@
-module github.com/0xPolygon/rpc
+module github.com/0xPolygon/cdk-rpc
 
 go 1.21.3
 

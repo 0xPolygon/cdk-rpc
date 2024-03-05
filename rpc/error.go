@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/0xPolygon/rpc/types"
+	"github.com/0xPolygon/cdk-rpc/types"
 )
 
 const (

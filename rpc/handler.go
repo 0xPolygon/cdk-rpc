@@ -9,7 +9,7 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/0xPolygon/rpc/log"
+	"github.com/0xPolygon/cdk-rpc/log"
 	"github.com/gorilla/websocket"
 )
 

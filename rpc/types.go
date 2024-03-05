@@ -3,7 +3,7 @@ package rpc
 import (
 	"encoding/json"
 
-	"github.com/0xPolygon/rpc/types"
+	"github.com/0xPolygon/cdk-rpc/types"
 )
 
 // Request is a jsonrpc request
