@@ -142,7 +142,7 @@ func (h *Handler) Handle(req handleRequest) Response {
 
 	output := fd.fv.Call(inArgs)
 	if err := getError(output[1]); err != nil {
-		log.Infof("failed call: [%v]%v. Params: %v", err.ErrorCode(), err.Error(), string(req.Params))
+		log.Errorf("failed call: [%v]%v. Params: %v", err.ErrorCode(), err.Error(), string(req.Params))
 		return NewResponse(req.Request, nil, err)
 	}
 
