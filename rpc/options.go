@@ -13,7 +13,7 @@ func WithHealthHandler(h http.Handler) Option {
 	}
 }
 
-func WithLoggerConfig(zapLogger *zap.SugaredLogger) Option {
+func WithLogger(zapLogger *zap.SugaredLogger) Option {
 	return func(s *Server) {
 		log.SetLogger(zapLogger)
 	}
