@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -137,30 +136,39 @@ func (s *Server) handle(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method != "POST" {
-		err := errors.New("method " + req.Method + " not allowed")
-		s.handleInvalidRequest(w, err)
+		handleError(w, fmt.Errorf("method %s not allowed", req.Method))
 		return
 	}
 
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		s.handleInvalidRequest(w, err)
+		log.Error(err)
+		handleError(w, err)
 		return
 	}
 
 	single, err := s.isSingleRequest(data)
 	if err != nil {
-		s.handleInvalidRequest(w, err)
+		log.Error(err)
+		handleError(w, err)
 		return
 	}
 
 	start := time.Now()
+
 	var respLen int
+
 	if single {
-		respLen = s.handleSingleRequest(req, w, data)
+		respLen, err = s.handleSingleRequest(req, w, data)
 	} else {
-		respLen = s.handleBatchRequest(req, w, data)
+		respLen, err = s.handleBatchRequest(req, w, data)
 	}
+
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
 	combinedLog(req, start, http.StatusOK, respLen)
 }
 
@@ -174,51 +182,58 @@ func (s *Server) isSingleRequest(data []byte) (bool, Error) {
 	return x[0] == '{', nil
 }
 
-func (s *Server) handleSingleRequest(httpRequest *http.Request, w http.ResponseWriter, data []byte) int {
+func (s *Server) handleSingleRequest(httpRequest *http.Request, w http.ResponseWriter, data []byte) (int, error) {
 	request, err := s.parseRequest(data)
 	if err != nil {
-		handleError(w, err)
-		return 0
+		log.Info(err)
+		return 0, err
 	}
-	req := handleRequest{Request: request, HttpRequest: httpRequest}
+
+	req := newHandleRequest(request, httpRequest)
+
 	response := s.handler.Handle(req)
 
 	respBytes, err := json.Marshal(response)
 	if err != nil {
-		handleError(w, err)
-		return 0
+		log.Error(err)
+		return 0, err
 	}
 
-	_, err = w.Write(respBytes)
-	if err != nil {
-		handleError(w, err)
-		return 0
+	if _, err = w.Write(respBytes); err != nil {
+		log.Error(err)
+		return 0, err
 	}
-	return len(respBytes)
+
+	return len(respBytes), nil
 }
 
-func (s *Server) handleBatchRequest(httpRequest *http.Request, w http.ResponseWriter, data []byte) int {
+func (s *Server) handleBatchRequest(httpRequest *http.Request, w http.ResponseWriter, data []byte) (int, error) {
 	requests, err := s.parseRequests(data)
 	if err != nil {
-		handleError(w, err)
-		return 0
+		log.Info(err)
+		return 0, err
 	}
 
 	responses := make([]Response, 0, len(requests))
 
 	for _, request := range requests {
-		req := handleRequest{Request: request, HttpRequest: httpRequest}
+		req := newHandleRequest(request, httpRequest)
 		response := s.handler.Handle(req)
 		responses = append(responses, response)
 	}
 
-	respBytes, _ := json.Marshal(responses)
-	_, err = w.Write(respBytes)
+	respBytes, err := json.Marshal(responses)
 	if err != nil {
 		log.Error(err)
-		return 0
+		return 0, err
 	}
-	return len(respBytes)
+
+	if _, err = w.Write(respBytes); err != nil {
+		log.Error(err)
+		return 0, err
+	}
+
+	return len(respBytes), nil
 }
 
 func (s *Server) parseRequest(data []byte) (Request, error) {
@@ -241,15 +256,10 @@ func (s *Server) parseRequests(data []byte) ([]Request, error) {
 	return requests, nil
 }
 
-func (s *Server) handleInvalidRequest(w http.ResponseWriter, err error) {
-	handleError(w, err)
-}
-
 func handleError(w http.ResponseWriter, err error) {
-	log.Error(err)
 	w.WriteHeader(http.StatusInternalServerError)
-	_, err = w.Write([]byte(err.Error()))
-	if err != nil {
+
+	if _, err = w.Write([]byte(err.Error())); err != nil {
 		log.Error(err)
 	}
 }
