@@ -35,8 +35,15 @@ func (f *funcData) numParams() int {
 
 type handleRequest struct {
 	Request
-	wsConn      *websocket.Conn
 	HttpRequest *http.Request
+	wsConn      *websocket.Conn
+}
+
+func newHandleRequest(r Request, hr *http.Request) handleRequest {
+	return handleRequest{
+		Request:     r,
+		HttpRequest: hr,
+	}
 }
 
 // Handler manage services to handle jsonrpc requests
@@ -164,11 +171,8 @@ func (h *Handler) HandleWs(reqBody []byte, wsConn *websocket.Conn, httpReq *http
 		return NewResponse(req, nil, NewRPCError(InvalidRequestErrorCode, invalidJSONReqErr.Error())).Bytes()
 	}
 
-	handleReq := handleRequest{
-		Request:     req,
-		wsConn:      wsConn,
-		HttpRequest: httpReq,
-	}
+	handleReq := newHandleRequest(req, httpReq)
+	handleReq.wsConn = wsConn
 
 	return h.Handle(handleReq).Bytes()
 }
