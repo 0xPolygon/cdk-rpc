@@ -73,10 +73,9 @@ type Handler struct {
 }
 
 func newJSONRpcHandler() *Handler {
-	handler := &Handler{
+	return &Handler{
 		serviceMap: map[string]*serviceData{},
 	}
-	return handler
 }
 
 var (
@@ -197,7 +196,7 @@ func (h *Handler) registerService(service Service) {
 			fv: mv.Func,
 		}
 		var err error
-		if fd.inNum, fd.reqt, err = validateFunc(funcName, fd.fv, true); err != nil {
+		if fd.inNum, fd.reqt, err = validateFunc(funcName, fd.fv); err != nil {
 			panic(fmt.Sprintf("jsonrpc: %s", err))
 		}
 		// check if last item is a pointer
@@ -238,7 +237,7 @@ func (h *Handler) getFnHandler(req Request) (*serviceData, *funcData, Error) {
 	return service, fd, nil
 }
 
-func validateFunc(funcName string, fv reflect.Value, isMethod bool) (inNum int, reqt []reflect.Type, err error) {
+func validateFunc(funcName string, fv reflect.Value) (inNum int, reqt []reflect.Type, err error) {
 	if funcName == "" {
 		err = fmt.Errorf("getBlockNumByArg cannot be empty")
 		return
