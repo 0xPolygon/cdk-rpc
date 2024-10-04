@@ -3,8 +3,6 @@ package rpc
 import (
 	"errors"
 	"fmt"
-
-	"github.com/0xPolygon/cdk-rpc/types"
 )
 
 const (
@@ -38,9 +36,9 @@ type Error interface {
 
 // ErrorObject is a jsonrpc error
 type ErrorObject struct {
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Data    *types.ArgBytes `json:"data,omitempty"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
 // RPCError represents an error returned by a JSON RPC endpoint.
