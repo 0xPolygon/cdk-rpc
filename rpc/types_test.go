@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestResponse_MarshalUnmarshal(t *testing.T) {
+func TestResponseMarshalUnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		name         string
 		request      Request
