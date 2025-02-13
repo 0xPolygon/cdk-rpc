@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/0xPolygon/cdk-rpc/types"
 )
@@ -18,8 +19,8 @@ type Request struct {
 type Response struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      interface{}     `json:"id"`
-	Result  json.RawMessage `json:"result"`
-	Error   *ErrorObject    `json:"error"`
+	Result  json.RawMessage `json:"result,omitempty"`
+	Error   *ErrorObject    `json:"error,omitempty"`
 }
 
 // NewResponse returns Success/Error response object
@@ -30,7 +31,7 @@ func NewResponse(req Request, reply []byte, err Error) Response {
 	}
 
 	var errorObj *ErrorObject
-	if err != nil {
+	if err != nil && !isNil(err) {
 		errorObj = &ErrorObject{
 			Code:    err.ErrorCode(),
 			Message: err.Error(),
@@ -46,6 +47,11 @@ func NewResponse(req Request, reply []byte, err Error) Response {
 		Result:  result,
 		Error:   errorObj,
 	}
+}
+
+// isNil checks if the underlying value of an interface is nil
+func isNil(i interface{}) bool {
+	return i == nil || (reflect.ValueOf(i).Kind() == reflect.Ptr && reflect.ValueOf(i).IsNil())
 }
 
 // Bytes return the serialized response
