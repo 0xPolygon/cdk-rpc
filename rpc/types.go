@@ -19,7 +19,7 @@ type Response struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      interface{}     `json:"id"`
 	Result  json.RawMessage `json:"result"`
-	Error   *ErrorObject    `json:"error"`
+	Error   *ErrorObject    `json:"error,omitempty"`
 }
 
 // NewResponse returns Success/Error response object
